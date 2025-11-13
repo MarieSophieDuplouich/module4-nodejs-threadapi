@@ -30,7 +30,7 @@ export async function loadSequelize() {
 
         const Comment = sequelize.define("Comment", {
             content: DataTypes.TEXT,
-            datetime: DataTypes.CREATEDAT,
+            datetime: DataTypes.DATE,
             userId: DataTypes.ID.FOREIGNKEY,
             postId: DataTypes.ID.FOREIGNKEY
 
@@ -39,7 +39,7 @@ export async function loadSequelize() {
         const Post = sequelize.define("Post", {
             title: DataTypes.TEXT,
             content: DataTypes.TEXT,
-            datetime: DataTypes.CREATEDAT,
+            datetime: DataTypes.DATE,
             userId: DataTypes.ID.FOREIGNKEY
 
         });
