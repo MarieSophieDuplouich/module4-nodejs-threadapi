@@ -18,8 +18,6 @@ export async function loadSequelize() {
             dialect: 'mysql'
         });
 
-
-
         // ----  1. Création de tables via les models ---- 
         // Création des models (tables) -------------//
         const User = sequelize.define("User", {
@@ -45,9 +43,47 @@ export async function loadSequelize() {
         });
 
 
-        //quelquechose à ajouter ici ?
+        //comment s'appelle cette partie ?
         User.hasMany(Comment);
         Comment.belongsTo(User);
+
+        User.hasMany(Post);
+        Post.belongsTo(User);
+
+        Post.hasMany(Comment);
+        Comment.belongsTo(Post);
+
+         
+
+
+        // Création d'un post
+        const otherPost = await Post.create({
+            title: "Faire les courses",
+            content: "Du savon, des frites et une Xbox 360",
+            userId : userById.id
+        });
+
+                 // ---- 4. Les méthodes mixins pour créer et accéder aux données lors d'une relation `OneToMany`.-----------//
+        // Création de plusieurs tâches à partir d'un utilisateur
+        await userById.createPost({ title: "Chien", content: "Sortir le chien" });
+        await userById.createPost({ title: "le chat", content: "nourrir le chat" });
+
+
+        
+        //création commentaires/comments
+
+        const otherComment  = await Comment.create({
+            content: "mes commentaires",
+            datetime: "16/11/2024",
+            userId : userById.id,
+            postId: otherPost.id
+        });
+
+
+
+
+
+        
 
                // CREER LES TABLES AVANT LA FONCTION sync !
         // -----------------------------------------//
@@ -95,17 +131,6 @@ export async function loadSequelize() {
         const userById = await User.findByPk(2);
         console.log(userById);
 
-        // Création d'une tâche de façon traditionnelle
-        const otherPost = await Post.create({
-            title: "Faire les courses",
-            content: "Du savon, des frites et une Xbox 360",
-            userId : userById.id
-        });
-
-                 // ---- 4. Les méthodes mixins pour créer et accéder aux données lors d'une relation `OneToMany`.-----------//
-        // Création de plusieurs tâches à partir d'un utilisateur
-        await userById.createPost({ title: "Chien", content: "Sortir le chien" });
-        await userById.createPost({ title: "le chat", content: "nourrir le chat" });
 
 
         // SELECT toutes les tâches d'un utilisateur
@@ -114,6 +139,9 @@ export async function loadSequelize() {
         console.log(allUserPosts.map(post=>post.content))
         // SELECT toutes les tâches
         console.log((await Post.findAll()).map(post=>post.content));
+
+
+  
         return sequelize;
     } catch (error) {
         console.error(error);
