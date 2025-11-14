@@ -12,13 +12,19 @@ async function main() {
         const sequelize = await loadSequelize();
         const app = express();
 
-       bcrypt.genSalt(saltRounds, function(err, salt) {
-    bcrypt.hash(myPlaintextPassword, salt, function(err, hash) {
-        // Store hash in your password DB.
-    });
-});
+        app.get("/",(req,res)=>{
 
 
+            res.json({message:"Hello api"})
+        })
+
+        app.get("/posts",async (req,res)=>{
+            const Post = sequelize.models.Post;
+            const posts = await Post.findAll()
+            res.json(posts);
+        })
+
+       
 
         app.listen(3000, () => {
             console.log("Serveur démarré sur http://localhost:3000");
@@ -34,7 +40,7 @@ main();
 
 //// c'est quoi cors ?
 
-https://aws.amazon.com/what-is/cross-origin-resource-sharing/#:~:text=Cross%2Dorigin%20resource%20sharing%20(CORS,resources%20in%20a%20different%20domain.
+// https://aws.amazon.com/what-is/cross-origin-resource-sharing/#:~:text=Cross%2Dorigin%20resource%20sharing%20(CORS,resources%20in%20a%20different%20domain.
 
 // Qu'est-ce que le partage des ressources entre origines multiples ?
 // Le partage des ressources entre origines multiples (CORS) 
