@@ -24,6 +24,12 @@ async function main() {
             res.json(posts);
         })
 
+           app.get("/comments",async (req,res)=>{
+            const Comment = sequelize.models.Comment;
+            const comments = await Comment.findAll()
+            res.json(comments);
+        })
+
        
 
         app.listen(3000, () => {
