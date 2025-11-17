@@ -2,11 +2,21 @@ import { loadSequelize } from "./database.mjs";
 import express from "express";
 import cors from "cors";
 import bcrypt from "bcrypt";
+import { format } from "mysql2";
 
 /**
  * Point d'entrée de l'application
  * Vous déclarer ici les routes de votre API REST
  */
+
+
+// POST/task -> Insert Into
+// GET/tasks -> select from 
+// Get/task/:id -> select from where id
+// POST/login select
+// Post/register insert into !!!!!!!!!!!!!!!!!!!!!!!
+
+
 async function main() {
     try {
         const sequelize = await loadSequelize();
@@ -15,7 +25,7 @@ async function main() {
         app.get("/",(req,res)=>{
 
 
-            res.json({message:"Hello api"})
+            res.json({message:"Hello api, le vrai projet"})
         })
 
         app.get("/posts",async (req,res)=>{
