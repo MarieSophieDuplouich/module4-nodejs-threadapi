@@ -1,3 +1,153 @@
+// import { Sequelize, DataTypes } from "sequelize";
+
+// /**
+//  * 
+//  * @returns {Promise<Sequelize>}
+//  */
+// export async function loadSequelize() {
+//     try {
+//         const login = {
+//             database: "app-database",
+//             username: "root",
+//             password: "root"
+//         };
+//         // ----  0. Connexion au serveur mysql ---- 
+//         // Connexion à la BDD
+//         const sequelize = new Sequelize(login.database, login.username, login.password, {
+//             host: '127.0.0.1',
+//             dialect: 'mysql'
+//         });
+
+//         // ----  1. Création de tables via les models ---- 
+//         // Création des models (tables) -------------//
+//         const User = sequelize.define("User", {
+//             username: DataTypes.STRING,
+//             email: DataTypes.STRING,
+//             password: DataTypes.STRING
+//         });
+
+//         const Comment = sequelize.define("Comment", {
+//             content: DataTypes.TEXT,
+//             datetime: DataTypes.DATE,
+            
+
+//         });
+
+//         const Post = sequelize.define("Post", {
+//             title: DataTypes.TEXT,
+//             content: DataTypes.TEXT,
+//             datetime: DataTypes.DATE,
+           
+
+//         });
+
+//                 //comment s'appelle cette partie ? les relations les define avanr syn les .create après
+//         User.hasMany(Comment);//ligne ajoute foreign key
+//         Comment.belongsTo(User);
+
+//         User.hasMany(Post);
+//         Post.belongsTo(User);
+
+//         Post.hasMany(Comment);
+//         Comment.belongsTo(Post);
+         
+
+
+//                // CREER LES TABLES AVANT LA FONCTION sync !
+//         // -----------------------------------------//
+//         await sequelize.sync({ force: true });
+//                     // ----  2. Insertion de lignes ---- 
+//         // INSERT INTO User
+//         const newUser = await User.create({
+//             username: "massinissa",
+//             email: "massi@mail.com",
+//             password: "1234"
+//         });
+//         // INSERT INTO User
+//         const newUser2 = await User.create({
+//             username: "billy",
+//             email: "billy@mail.com",
+//             password: "1234"
+//         });
+
+//          // INSERT INTO User
+//         const newUser3 = await User.create({
+//             username: "billyetboule",
+//             email: "billyboule@mail.com",
+//             password: "1234"
+//         });
+
+//         // DELETE User
+//         await User.destroy({
+//             where: {
+//                 username: "massinissa"
+//             }
+//         })
+
+
+        
+//                 // Je récupère un utilisateur en fonction de son id
+//         const userById = await User.findByPk(2);
+//         console.log(userById);
+         
+
+
+//         // Création d'un post
+//         const otherPost = await Post.create({
+//             title: "Faire les courses",
+//             content: "Du savon, des frites et une Xbox 360",
+//         });
+               
+//         //création commentaires/comments
+
+//         const otherComment  = await Comment.create({
+//             content: "mes commentaires",
+//             datetime: new Date(Date.now()),
+//             userId : userById.id,
+//             postId: otherPost.id
+//         });
+                 
+//            // ---- 3. Sélection de lignes (SELECT) ---- 
+//         // SELECT * FROM User après ajout des deux users 
+//         let allUsers = await User.findAll();
+
+//         // J'affiche l'email de chaque utilisateur
+//         allUsers.forEach(user => {
+//             console.log(user.email)
+//         });
+
+//         // SELECT toutes les tâches d'un utilisateur
+//         const allUserPosts = await userById.getPosts();
+
+//         console.log(allUserPosts.map(post=>post.content))
+//         // SELECT toutes les tâches
+//         console.log((await Post.findAll()).map(post=>post.content));
+       
+
+
+//         // ---- 4. Les méthodes mixins pour créer et accéder aux données lors d'une relation `OneToMany`.-----------//
+//         // Création de plusieurs tâches à partir d'un utilisateur
+//         await userById.createPost({ title: "Chien", content: "Sortir le chien" });
+//         await userById.createPost({ title: "le chat", content: "nourrir le chat" });
+
+
+ 
+
+//         console.log("Connexion à la BDD effectuée")
+
+      
+     
+
+//         return sequelize;
+//     } catch (error) {
+//         console.error(error);
+//         throw Error("Échec du chargement de Sequelize");
+//     }
+
+//     // ...
+
+// } // ancien code
+
 import { Sequelize, DataTypes } from "sequelize";
 
 /**
@@ -26,37 +176,22 @@ export async function loadSequelize() {
             password: DataTypes.STRING
         });
 
-        const Comment = sequelize.define("Comment", {
+        const Task = sequelize.define("Task", {
+            title : DataTypes.TEXT,
             content: DataTypes.TEXT,
-            datetime: DataTypes.DATE,
-            
-
+            datetime: DataTypes.DATE
         });
 
-        const Post = sequelize.define("Post", {
-            title: DataTypes.TEXT,
-            content: DataTypes.TEXT,
-            datetime: DataTypes.DATE,
-           
 
-        });
-
-                //comment s'appelle cette partie ? les relations les define avanr syn les .create après
-        User.hasMany(Comment);//ligne ajoute foreign key
-        Comment.belongsTo(User);
-
-        User.hasMany(Post);
-        Post.belongsTo(User);
-
-        Post.hasMany(Comment);
-        Comment.belongsTo(Post);
-         
+        // les relations les define avant le sync les .create après
+        User.hasMany(Task);//ligne ajoute foreign key
+        Task.belongsTo(User);
 
 
-               // CREER LES TABLES AVANT LA FONCTION sync !
+        // CREER LES TABLES AVANT LA FONCTION sync !
         // -----------------------------------------//
         await sequelize.sync({ force: true });
-                    // ----  2. Insertion de lignes ---- 
+        // ----  2. Insertion de lignes ---- 
         // INSERT INTO User
         const newUser = await User.create({
             username: "massinissa",
@@ -70,7 +205,7 @@ export async function loadSequelize() {
             password: "1234"
         });
 
-         // INSERT INTO User
+        // INSERT INTO User
         const newUser3 = await User.create({
             username: "billyetboule",
             email: "billyboule@mail.com",
@@ -78,36 +213,28 @@ export async function loadSequelize() {
         });
 
         // DELETE User
-        await User.destroy({
-            where: {
-                username: "massinissa"
-            }
-        })
+        // await User.destroy({
+        //     where: {
+        //         username: "massinissa"
+        //     }
+        // })
 
 
-        
-                // Je récupère un utilisateur en fonction de son id
+
+        // Je récupère un utilisateur en fonction de son id
         const userById = await User.findByPk(2);
         console.log(userById);
-         
+
 
 
         // Création d'un post
-        const otherPost = await Post.create({
+        const otherTask = await Task.create({
             title: "Faire les courses",
             content: "Du savon, des frites et une Xbox 360",
         });
-               
-        //création commentaires/comments
 
-        const otherComment  = await Comment.create({
-            content: "mes commentaires",
-            datetime: new Date(Date.now()),
-            userId : userById.id,
-            postId: otherPost.id
-        });
-                 
-           // ---- 3. Sélection de lignes (SELECT) ---- 
+   
+        // ---- 3. Sélection de lignes (SELECT) ---- 
         // SELECT * FROM User après ajout des deux users 
         let allUsers = await User.findAll();
 
@@ -117,26 +244,26 @@ export async function loadSequelize() {
         });
 
         // SELECT toutes les tâches d'un utilisateur
-        const allUserPosts = await userById.getPosts();
+        const allUserTasks = await userById.getTasks();
 
-        console.log(allUserPosts.map(post=>post.content))
+        console.log(allUserTasks.map(task => task.content))
         // SELECT toutes les tâches
-        console.log((await Post.findAll()).map(post=>post.content));
-       
+        console.log((await Task.findAll()).map(task => task.content));
+
 
 
         // ---- 4. Les méthodes mixins pour créer et accéder aux données lors d'une relation `OneToMany`.-----------//
         // Création de plusieurs tâches à partir d'un utilisateur
-        await userById.createPost({ title: "Chien", content: "Sortir le chien" });
-        await userById.createPost({ title: "le chat", content: "nourrir le chat" });
+        await userById.createTask({ title: "Chien", content: "Sortir le chien"});
+        await userById.createTask({ title: "le chat", content: "nourrir le chat"});
 
 
- 
+
 
         console.log("Connexion à la BDD effectuée")
 
-      
-     
+
+
 
         return sequelize;
     } catch (error) {
