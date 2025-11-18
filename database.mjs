@@ -245,7 +245,7 @@ export async function loadSequelize() {
 
 
         // Création d'un post
-        const otherPost = await Post.create({
+        const NewPost = await Post.create({
             title: "Faire les courses",
             content: "Du savon, des frites et une Xbox 360",
         });
@@ -256,7 +256,7 @@ export async function loadSequelize() {
             content: "mes commentaires",
             datetime: new Date(Date.now()),
             userId: userById.id,
-            postId: otherPost.id
+            postId: NewPost.id
         });
 
 
