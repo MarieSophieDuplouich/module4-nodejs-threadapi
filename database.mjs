@@ -185,23 +185,16 @@ export async function loadSequelize() {
            
 
         });
-
-        const User = sequelize.define("User", {
+         
+              const User = sequelize.define("User", {
             username: DataTypes.STRING,
             email: DataTypes.STRING,
             password: DataTypes.STRING
         });
 
-        const Task = sequelize.define("Task", {
-            title : DataTypes.TEXT,
-            content: DataTypes.TEXT,
-            datetime: DataTypes.DATE
-        });
-
 
         // les relations les define avant le sync les .create après
-        User.hasMany(Task);//ligne ajoute foreign key
-        Task.belongsTo(User);
+
         
         User.hasMany(Comment);//ligne ajoute foreign key
         Comment.belongsTo(User);
@@ -251,12 +244,7 @@ export async function loadSequelize() {
 
 
 
-        // Création d'un post
-        const otherTask = await Task.create({
-            title: "Faire les courses",
-            content: "Du savon, des frites et une Xbox 360",
-        });
-
+  
    
         // ---- 3. Sélection de lignes (SELECT) ---- 
         // SELECT * FROM User après ajout des deux users 
@@ -267,24 +255,13 @@ export async function loadSequelize() {
             console.log(user.email)
         });
 
-        // SELECT toutes les tâches d'un utilisateur
-        const allUserTasks = await userById.getTasks();
-
-        console.log(allUserTasks.map(task => task.content))
-        // SELECT toutes les tâches
-        console.log((await Task.findAll()).map(task => task.content));
-
-
-
-        // ---- 4. Les méthodes mixins pour créer et accéder aux données lors d'une relation `OneToMany`.-----------//
-        // Création de plusieurs tâches à partir d'un utilisateur
-        await userById.createTask({ title: "Chien", content: "Sortir le chien"});
-        await userById.createTask({ title: "le chat", content: "nourrir le chat"});
 
 
 
 
-        console.log("Connexion à la BDD effectuée")
+
+
+
 
 
 
