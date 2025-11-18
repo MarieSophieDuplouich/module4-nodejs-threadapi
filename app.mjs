@@ -40,7 +40,7 @@
 //             res.json(comments);
 //         })
 
-       
+
 
 //         app.listen(3000, () => {
 //             console.log("Serveur démarré sur http://localhost:3000");
@@ -76,11 +76,11 @@
 //   Le CORS permet au navigateur du client de vérifier 
 //   auprès des serveurs tiers si la requête est autorisée avant tout transfert de données.
 // app.use(cors())
- 
+
 // app.get('/products/:id', function (req, res, next) {
 //   res.json({msg: 'This is CORS-enabled for all origins!'})
 // })
- 
+
 // app.listen(80, function () {
 //   console.log('CORS-enabled web server listening on port 80')
 // })
@@ -112,11 +112,25 @@ async function main() {
             res.json({ message: "Hello api 7 le vrai projet" })
         })
 
-        app.get("/tasks", async (req, res) => {
-            const Task = sequelize.models.Task;
-            const tasks = await Task.findAll()
-            res.json(tasks);
+        app.get("/comments", async (req, res) => {
+            const Comment = sequelize.models.Comment;
+            const comments = await Comment.findAll()
+            res.json(comments);
         })
+
+
+        // /posts GET Récupération de tous les posts avec commentaires	pas de protection
+
+        app.get("/posts", async (req, res) => {
+            const Post = sequelize.models.Post;
+            const posts = await Post.findAll()
+            res.json(posts);
+        })
+        ///// attention !!!
+        //Création d'un nouveau post /posts doit être un POST OUI pour la protection 
+        //mettre son code ici ne pas confondre avec posts qui récupère tous les posts avec les commentaires
+        /////attention !!!!!
+
 
         app.get("/users", async (req, res) => {
             const User = sequelize.models.User;
@@ -125,7 +139,7 @@ async function main() {
         })
 
 
-        //Postman je suis GET /user/:id get user id postman fini"
+        //GET /user/:id get user id "
         app.get("/user/:id", async (req, res) => {
             console.log(req.params);
             const User = sequelize.models.User;
@@ -134,42 +148,49 @@ async function main() {
             res.json(user)
 
         })
+        
+        // GET	/users/:userId/posts	Récupération des posts d'un utilisateur	pas de protection
+        //    app.get("/:userId/posts", async (req, res) => {
+        //     console.log(req.params);
+        //     const User = sequelize.models.User;
+        //     const userId = req.params.id;
+        //     const user = await User.findByPk(userId);
+        //     res.json(user)
+
+        // })
+
+        // POST	/posts/:postId/comments	Ajout d'un commentaire à un post	Oui protection
 
 
-       
-        app.get("/goodbye", async (req, res) => {
-            res.send("<p>Goodbye World</p>");
+        // DELETE	/posts/:postId	Suppression d'un post	Oui (auteur ou admin)
+        
+        
+        // DELETE	/comments/:commentId	Suppression d'un commentaire	Oui (auteur ou admin)
+
+
+
+        app.get("/register", async (req, res) => {
+            res.send("<p>Inscription d'un nouvel utilisateur</p>");
         })
 
-        app.get("/status", async (req, res) => {
-            res.send("<p>Server is running</p>");
+        //register doit être un POST pas de protection
+
+
+        app.get("/login", async (req, res) => {
+            res.send("<p>Connexion d'un utilisateur</p>");
         })
 
-        app.get("/date", async (req, res) => {
-            res.send(new Date().toISOString());
+        //login doit être un POST pas de protection
+
+        app.get("/logout", async (req, res) => {
+            res.send("<p>utilisateur déconnecté</p>");
         })
 
-        app.get("/random", async (req, res) => {
-            res.send(Math.random());
-        })
-
-        app.get("/random10", async (req, res) => {
-            res.send(Math.random() * 10);
-        })
+        //logout doit être un POST OUI pour la protection
 
 
 
-                app.get("/posts",async (req,res)=>{
-            const Post = sequelize.models.Post;
-            const posts = await Post.findAll()
-            res.json(posts);
-        })
 
-           app.get("/comments",async (req,res)=>{
-            const Comment = sequelize.models.Comment;
-            const comments = await Comment.findAll()
-            res.json(comments);
-        })
 
 
         app.listen(3001, () => {
@@ -185,7 +206,6 @@ async function main() {
 main();
 
 
-/// l'autre code du cours apicours
 
 
 

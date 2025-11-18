@@ -269,7 +269,8 @@ export async function loadSequelize() {
             console.log(user.email)
         });
 
-
+        // SELECT toutes les tâches d'un utilisateur
+        const allUserPosts = await userById.getPosts();
         console.log(allUserPosts.map(post => post.content))
         // SELECT toutes les tâches
         console.log((await Post.findAll()).map(post => post.content));
