@@ -229,6 +229,13 @@ export async function loadSequelize() {
             password: "1234"
         });
 
+           // INSERT INTO User
+        const newUser4 = await User.create({
+            username: "legrandcactus",
+            email: "legrandcactus@mail.com",
+            password: "1234"
+        });
+
         // DELETE User
         // await User.destroy({
         //     where: {
@@ -245,9 +252,9 @@ export async function loadSequelize() {
 
 
         // Création d'un post
-        const NewPost = await Post.create({
-            title: "Faire les courses",
-            content: "Du savon, des frites et une Xbox 360",
+        const newPost = await Post.create({
+            title: "acheter chips",
+            content: "pour anniversaire Amaury",
         });
 
         //création commentaires/comments
@@ -256,7 +263,7 @@ export async function loadSequelize() {
             content: "mes commentaires",
             datetime: new Date(Date.now()),
             userId: userById.id,
-            postId: NewPost.id
+            postId: newPost.id
         });
 
 

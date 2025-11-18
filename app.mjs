@@ -16,6 +16,11 @@ async function main() {
         //fin de cours avec express sur post
           app.use(express.json());
           //fin de cours avec express sur post
+
+
+
+
+          
         app.get("/", (req, res) => {
 
 
@@ -48,7 +53,7 @@ async function main() {
                 const newPost = await Post.create({
                     title: newPostData.title,
                     content: newPostData.content,
-                    userId: 1
+                    userId: 3
           
                 });
                 res.json(newPost);
