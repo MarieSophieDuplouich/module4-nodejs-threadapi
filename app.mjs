@@ -105,7 +105,9 @@ async function main() {
     try {
         const sequelize = await loadSequelize();
         const app = express();
-
+        //fin de cours avec express sur post
+          app.use(express.json());
+          //fin de cours avec express sur post
         app.get("/", (req, res) => {
 
 
@@ -130,6 +132,29 @@ async function main() {
         //Création d'un nouveau post /posts doit être un POST OUI pour la protection 
         //mettre son code ici ne pas confondre avec posts qui récupère tous les posts avec les commentaires
         /////attention !!!!!
+       
+              
+
+        app.post("/task", async (request, response) => {
+            console.log(request.body);
+            const newTaskData = request.body;
+            try {
+                // +
+                const newTask = await Task.create({
+                    title: newTaskData.title,
+                    content: newTaskData.content,
+                    UserId: 1
+          
+                });
+                response.json(newTask);
+            } catch (error) {
+                console.log(error);
+                response.status(500).json({ error: "Erreur lors de la création de la tâche" });
+            }
+        });
+
+
+
 
 
         app.get("/users", async (req, res) => {
