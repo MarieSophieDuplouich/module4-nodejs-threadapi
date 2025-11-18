@@ -2,6 +2,7 @@ import { loadSequelize } from "./database.mjs";
 import express from "express";
 import cors from "cors";
 import bcrypt from "bcrypt";
+import cookieParser from 'cookie-parser';
 
 /**
  * Point d'entrée de l'application
@@ -14,13 +15,15 @@ async function main() {
         const sequelize = await loadSequelize();
         const app = express();
         //fin de cours avec express sur post
-          app.use(express.json());
-          //fin de cours avec express sur post
+        app.use(express.json());
+        //fin de cours avec express sur post
+
+
+        app.use(express.json()); // Activer le parsing du JSON body pour qu'il fournisse req.body
+        app.use(cookieParser()); // Activer cookie-parser pour qu'il fournissent les cookies dans req.cookies
 
 
 
-
-          
         app.get("/", (req, res) => {
 
 
@@ -43,7 +46,7 @@ async function main() {
         })
         ///// attention !!!
         //Création d'un nouveau post /posts doit être un POST OUI pour la protection 
-              
+
 
         app.post("/posts", async (req, res) => {
             console.log(req.body);
@@ -54,7 +57,7 @@ async function main() {
                     title: newPostData.title,
                     content: newPostData.content,
                     userId: 3
-          
+
                 });
                 res.json(newPost);
             } catch (error) {
@@ -83,7 +86,7 @@ async function main() {
             res.json(user)
 
         })
-        
+
         // GET	/users/:userId/posts	Récupération des posts d'un utilisateur	pas de protection
         //    app.get("/:userId/posts", async (req, res) => {
         //     console.log(req.params);
@@ -98,8 +101,8 @@ async function main() {
 
 
         // DELETE	/posts/:postId	Suppression d'un post	Oui (auteur ou admin)
-        
-        
+
+
         // DELETE	/comments/:commentId	Suppression d'un commentaire	Oui (auteur ou admin)
 
 
