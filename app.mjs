@@ -10,10 +10,16 @@ import cookieParser from 'cookie-parser';
  */
 
 
+
 async function main() {
     try {
+        const payload = jwt.decode(token);
+        const userId = payload.userId;
+        console.log(userId);
+        const token = jwt.sign({ userId: user.id }, 'votre_cle_secrete_pour_jwt', { expiresIn: '1h' });
         const sequelize = await loadSequelize();
         const app = express();
+
         //fin de cours avec express sur post
         app.use(express.json());
         //fin de cours avec express sur post
@@ -107,11 +113,31 @@ async function main() {
 
 
 
-        app.get("/register", async (req, res) => {
-            res.send("<p>Inscription d'un nouvel utilisateur</p>");
-        })
+        // app.get("/register", async (req, res) => {
+        //     res.send("<p>Inscription d'un nouvel utilisateur</p>");
+        // })
+        app.post('/register', async (req, res) => {
+            const { email, password, verifiedPassword } = req.body;
 
+            if (!email || !password || !verifiedPassword) {
+                return res.status(400).json({ message: 'Email, password and verifiedPassword are required' });
+            }
+
+            if (password !== verifiedPassword) {
+                return res.status(400).json({ message: 'Passwords do not match' });
+            }
+
+            try {
+                const newUser = await UserModel.create({ email, password });
+                res.status(201).json({ message: 'User registered successfully', userId: newUser.id });
+            } catch (error) {
+                res.status(500).json({ message: 'Error registering user', error: error.message });
+            }
+        });
         //register doit être un POST pas de protection
+
+
+
 
 
         app.get("/login", async (req, res) => {
