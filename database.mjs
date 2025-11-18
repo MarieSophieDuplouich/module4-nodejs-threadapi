@@ -173,7 +173,7 @@ export async function loadSequelize() {
 
         const Comment = sequelize.define("Comment", {
             content: DataTypes.TEXT,
-            datetime: DataTypes.DATE,
+            datetime: DataTypes.DATE
 
 
         });
@@ -181,7 +181,7 @@ export async function loadSequelize() {
         const Post = sequelize.define("Post", {
             title: DataTypes.TEXT,
             content: DataTypes.TEXT,
-            datetime: DataTypes.DATE,
+            datetime: DataTypes.DATE
 
 
         });
