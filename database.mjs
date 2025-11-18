@@ -29,7 +29,7 @@
 //         const Comment = sequelize.define("Comment", {
 //             content: DataTypes.TEXT,
 //             datetime: DataTypes.DATE,
-            
+
 
 //         });
 
@@ -37,7 +37,7 @@
 //             title: DataTypes.TEXT,
 //             content: DataTypes.TEXT,
 //             datetime: DataTypes.DATE,
-           
+
 
 //         });
 
@@ -50,7 +50,7 @@
 
 //         Post.hasMany(Comment);
 //         Comment.belongsTo(Post);
-         
+
 
 
 //                // CREER LES TABLES AVANT LA FONCTION sync !
@@ -85,11 +85,11 @@
 //         })
 
 
-        
+
 //                 // Je récupère un utilisateur en fonction de son id
 //         const userById = await User.findByPk(2);
 //         console.log(userById);
-         
+
 
 
 //         // Création d'un post
@@ -97,7 +97,7 @@
 //             title: "Faire les courses",
 //             content: "Du savon, des frites et une Xbox 360",
 //         });
-               
+
 //         //création commentaires/comments
 
 //         const otherComment  = await Comment.create({
@@ -106,7 +106,7 @@
 //             userId : userById.id,
 //             postId: otherPost.id
 //         });
-                 
+
 //            // ---- 3. Sélection de lignes (SELECT) ---- 
 //         // SELECT * FROM User après ajout des deux users 
 //         let allUsers = await User.findAll();
@@ -122,7 +122,7 @@
 //         console.log(allUserPosts.map(post=>post.content))
 //         // SELECT toutes les tâches
 //         console.log((await Post.findAll()).map(post=>post.content));
-       
+
 
 
 //         // ---- 4. Les méthodes mixins pour créer et accéder aux données lors d'une relation `OneToMany`.-----------//
@@ -131,12 +131,12 @@
 //         await userById.createPost({ title: "le chat", content: "nourrir le chat" });
 
 
- 
+
 
 //         console.log("Connexion à la BDD effectuée")
 
-      
-     
+
+
 
 //         return sequelize;
 //     } catch (error) {
@@ -174,7 +174,7 @@ export async function loadSequelize() {
         const Comment = sequelize.define("Comment", {
             content: DataTypes.TEXT,
             datetime: DataTypes.DATE,
-            
+
 
         });
 
@@ -182,11 +182,11 @@ export async function loadSequelize() {
             title: DataTypes.TEXT,
             content: DataTypes.TEXT,
             datetime: DataTypes.DATE,
-           
+
 
         });
-         
-              const User = sequelize.define("User", {
+
+        const User = sequelize.define("User", {
             username: DataTypes.STRING,
             email: DataTypes.STRING,
             password: DataTypes.STRING
@@ -195,7 +195,7 @@ export async function loadSequelize() {
 
         // les relations les define avant le sync les .create après
 
-        
+
         User.hasMany(Comment);//ligne ajoute foreign key
         Comment.belongsTo(User);
 
@@ -244,8 +244,22 @@ export async function loadSequelize() {
 
 
 
-  
-   
+        // Création d'un post
+        const otherPost = await Post.create({
+            title: "Faire les courses",
+            content: "Du savon, des frites et une Xbox 360",
+        });
+
+        //création commentaires/comments
+
+        const otherComment = await Comment.create({
+            content: "mes commentaires",
+            datetime: new Date(Date.now()),
+            userId: userById.id,
+            postId: otherPost.id
+        });
+
+
         // ---- 3. Sélection de lignes (SELECT) ---- 
         // SELECT * FROM User après ajout des deux users 
         let allUsers = await User.findAll();
@@ -256,11 +270,20 @@ export async function loadSequelize() {
         });
 
 
+        console.log(allUserPosts.map(post => post.content))
+        // SELECT toutes les tâches
+        console.log((await Post.findAll()).map(post => post.content));
+
+
+        // ---- 4. Les méthodes mixins pour créer et accéder aux données lors d'une relation `OneToMany`.-----------//
+        // Création de plusieurs tâches à partir d'un utilisateur
+        await userById.createPost({ title: "Chien", content: "Sortir le chien" });
+        await userById.createPost({ title: "le chat", content: "nourrir le chat" });
 
 
 
 
-
+        console.log("Connexion à la BDD effectuée")
 
 
 
