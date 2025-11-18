@@ -170,6 +170,22 @@ export async function loadSequelize() {
 
         // ----  1. Création de tables via les models ---- 
         // Création des models (tables) -------------//
+
+        const Comment = sequelize.define("Comment", {
+            content: DataTypes.TEXT,
+            datetime: DataTypes.DATE,
+            
+
+        });
+
+        const Post = sequelize.define("Post", {
+            title: DataTypes.TEXT,
+            content: DataTypes.TEXT,
+            datetime: DataTypes.DATE,
+           
+
+        });
+
         const User = sequelize.define("User", {
             username: DataTypes.STRING,
             email: DataTypes.STRING,
@@ -186,7 +202,15 @@ export async function loadSequelize() {
         // les relations les define avant le sync les .create après
         User.hasMany(Task);//ligne ajoute foreign key
         Task.belongsTo(User);
+        
+        User.hasMany(Comment);//ligne ajoute foreign key
+        Comment.belongsTo(User);
 
+        User.hasMany(Post);
+        Post.belongsTo(User);
+
+        Post.hasMany(Comment);
+        Comment.belongsTo(Post);
 
         // CREER LES TABLES AVANT LA FONCTION sync !
         // -----------------------------------------//

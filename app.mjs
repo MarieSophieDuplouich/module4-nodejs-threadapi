@@ -159,6 +159,17 @@ async function main() {
 
 
 
+                app.get("/posts",async (req,res)=>{
+            const Post = sequelize.models.Post;
+            const posts = await Post.findAll()
+            res.json(posts);
+        })
+
+           app.get("/comments",async (req,res)=>{
+            const Comment = sequelize.models.Comment;
+            const comments = await Comment.findAll()
+            res.json(comments);
+        })
 
 
         app.listen(3001, () => {
