@@ -149,7 +149,7 @@
 // } // ancien code
 
 import { Sequelize, DataTypes } from "sequelize";
-
+import bcrypt from "bcrypt";
 /**
  * 
  * @returns {Promise<Sequelize>}
@@ -189,7 +189,12 @@ export async function loadSequelize() {
         const User = sequelize.define("User", {
             username: DataTypes.STRING,
             email: DataTypes.STRING,
-            password: DataTypes.STRING
+            password: {
+                type : DataTypes.STRING,
+                set(val){
+                    this.setDataValue('password',bcrypt.hashSync(val,10))
+                }
+            }
         });
 
 

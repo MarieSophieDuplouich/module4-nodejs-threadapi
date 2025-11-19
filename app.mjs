@@ -5,6 +5,7 @@ import bcrypt from "bcrypt";
 import cookieParser from 'cookie-parser';
 import jwt from 'jsonwebtoken';
 
+const JWT_SECRET = 'coucou'; // Utilisez une clé secrète sécurisée dans une application réelle
 /**
  * Point d'entrée de l'application
  * Vous déclarer ici les routes de votre API REST
@@ -24,7 +25,6 @@ async function main() {
         app.use(express.json()); // Activer le parsing du JSON body pour qu'il fournisse req.body
         app.use(cookieParser()); // Activer cookie-parser pour qu'il fournissent les cookies dans req.cookies
         const UserModel = sequelize.models.User;
-        const JWT_SECRET = 'coucou'; // Utilisez une clé secrète sécurisée dans une application réelle
 
         app.post('/register', async (req, res) => {
             const { email, password, verifiedPassword } = req.body;
