@@ -19,17 +19,16 @@ async function main() {
         const app = express();
 
         //fin de cours avec express sur post
-        app.use(express.json());
-        //fin de cours avec express sur post
 
 
         app.use(express.json()); // Activer le parsing du JSON body pour qu'il fournisse req.body
         app.use(cookieParser()); // Activer cookie-parser pour qu'il fournissent les cookies dans req.cookies
         const UserModel = sequelize.models.User;
-        const JWT_SECRET = 'votre_cle_secrete_pour_jwt'; // Utilisez une clé secrète sécurisée dans une application réelle
+        const JWT_SECRET = 'coucou'; // Utilisez une clé secrète sécurisée dans une application réelle
 
         app.post('/register', async (req, res) => {
             const { email, password, verifiedPassword } = req.body;
+
 
             if (!email || !password || !verifiedPassword) {
                 return res.status(400).json({ message: 'Email, password and verifiedPassword are required' });
@@ -49,27 +48,43 @@ async function main() {
 
         //register doit être un POST pas de protection
 
-           app.post('/login', async (req, res) => {
+        app.post('/login', async (req, res) => {
+            console.log("LOGIN REQ BODY :", req.body)
+
             const { email, password } = req.body;
             if (!email || !password) {
                 return res.status(400).json({ message: 'Email and password are required' });
             }
             try {
-                const user = await UserModel.findOne({ where: { email, password } });
+                const user = await UserModel.findOne({ where: { email } });
+                console.log("USER FOUND :", user);
                 if (!user) {
                     return res.status(401).json({ message: 'Invalid email or password' });
                 }
 
+
+                const isMatch = await bcrypt.compare(password, user.password);
+
+                console.log("PASSWORD MATCH ?", isMatch); // <--- LOG #3
+
+                if (!isMatch) {
+                    return res.status(401).json({ message: 'Invalid email or password' });
+                }
+
+
                 const token = jwt.sign({ userId: user.id }, JWT_SECRET, { expiresIn: '1h' });
+
+
                 res.cookie('token', token, { httpOnly: true });
                 res.json({ message: 'Login successful' });
             } catch (error) {
+                 console.error("LOGIN ERROR :", error);    // <--- LOG #4
                 res.status(500).json({ message: 'Error logging in', error: error.message });
             }
         });
-         
 
-                //Middleware isLoggedInJWT
+
+        //Middleware isLoggedInJWT
 
 
         function isLoggedInJWT(UserModel) {
@@ -184,33 +199,17 @@ async function main() {
 
 
 
-        // app.get("/register", async (req, res) => {
-        //     res.send("<p>Inscription d'un nouvel utilisateur</p>");
-        // })
-
-
-
-
-
-
-        // app.post("/login", async (req, res) => {
-        //     res.send("<p>Connexion d'un utilisateur</p>");
-        // })
-
-   
-
-     
-
         //login doit être un POST pas de protection
 
         app.get("/logout", async (req, res) => {
-            res.send("<p>utilisateur déconnecté</p>");
+            res.clearCookie('token');
+            res.json({ message: 'Logout successful' });
         })
 
         //logout doit être un POST OUI pour la protection
 
 
-   
+
 
         app.listen(3001, () => {
             console.log("Serveur démarré sur http://localhost:3001/");
