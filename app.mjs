@@ -3,6 +3,7 @@ import express from "express";
 import cors from "cors";
 import bcrypt from "bcrypt";
 import cookieParser from 'cookie-parser';
+import jwt from 'jsonwebtoken';
 
 /**
  * Point d'entrée de l'application
@@ -13,10 +14,7 @@ import cookieParser from 'cookie-parser';
 
 async function main() {
     try {
-        const payload = jwt.decode(token);
-        const userId = payload.userId;
-        console.log(userId);
-        const token = jwt.sign({ userId: user.id }, 'votre_cle_secrete_pour_jwt', { expiresIn: '1h' });
+
         const sequelize = await loadSequelize();
         const app = express();
 
@@ -27,6 +25,79 @@ async function main() {
 
         app.use(express.json()); // Activer le parsing du JSON body pour qu'il fournisse req.body
         app.use(cookieParser()); // Activer cookie-parser pour qu'il fournissent les cookies dans req.cookies
+        const UserModel = sequelize.models.User;
+        const JWT_SECRET = 'votre_cle_secrete_pour_jwt'; // Utilisez une clé secrète sécurisée dans une application réelle
+
+        app.post('/register', async (req, res) => {
+            const { email, password, verifiedPassword } = req.body;
+
+            if (!email || !password || !verifiedPassword) {
+                return res.status(400).json({ message: 'Email, password and verifiedPassword are required' });
+            }
+
+            if (password !== verifiedPassword) {
+                return res.status(400).json({ message: 'Passwords do not match' });
+            }
+
+            try {
+                const newUser = await UserModel.create({ email, password });
+                res.status(201).json({ message: 'User registered successfully', userId: newUser.id });
+            } catch (error) {
+                res.status(500).json({ message: 'Error registering user', error: error.message });
+            }
+        });
+
+        //register doit être un POST pas de protection
+
+           app.post('/login', async (req, res) => {
+            const { email, password } = req.body;
+            if (!email || !password) {
+                return res.status(400).json({ message: 'Email and password are required' });
+            }
+            try {
+                const user = await UserModel.findOne({ where: { email, password } });
+                if (!user) {
+                    return res.status(401).json({ message: 'Invalid email or password' });
+                }
+
+                const token = jwt.sign({ userId: user.id }, JWT_SECRET, { expiresIn: '1h' });
+                res.cookie('token', token, { httpOnly: true });
+                res.json({ message: 'Login successful' });
+            } catch (error) {
+                res.status(500).json({ message: 'Error logging in', error: error.message });
+            }
+        });
+         
+
+                //Middleware isLoggedInJWT
+
+
+        function isLoggedInJWT(UserModel) {
+            return async (req, res, next) => {
+                const token = req.cookies.token;
+                if (!token) {
+                    return res.status(401).json({ message: 'Unauthorized: No token provided' });
+                }
+                try {
+                    const decoded = jwt.verify(token, JWT_SECRET);
+                    req.userId = decoded.userId;
+
+                    // ++++++++++
+                    // Récupérer l'utilisateur connecté
+                    req.user = await UserModel.findByPk(req.userId);
+                    if (!req.user) {
+                        return res.status(401).json({ message: 'Unauthorized' });
+                    }
+                    // ++++++++++
+
+                    next();
+                } catch (error) {
+                    return res.status(401).json({ message: 'Unauthorized: Invalid token' });
+                }
+            }
+        }
+
+
 
 
 
@@ -68,7 +139,7 @@ async function main() {
                 res.json(newPost);
             } catch (error) {
                 console.log(error);
-                res.status(500).json({ error: "Erreur lors de la création de la tâche" });
+                res.status(500).json({ error: "Erreur lors de la création du post" });
             }
         });
 
@@ -116,25 +187,7 @@ async function main() {
         // app.get("/register", async (req, res) => {
         //     res.send("<p>Inscription d'un nouvel utilisateur</p>");
         // })
-        app.post('/register', async (req, res) => {
-            const { email, password, verifiedPassword } = req.body;
 
-            if (!email || !password || !verifiedPassword) {
-                return res.status(400).json({ message: 'Email, password and verifiedPassword are required' });
-            }
-
-            if (password !== verifiedPassword) {
-                return res.status(400).json({ message: 'Passwords do not match' });
-            }
-
-            try {
-                const newUser = await UserModel.create({ email, password });
-                res.status(201).json({ message: 'User registered successfully', userId: newUser.id });
-            } catch (error) {
-                res.status(500).json({ message: 'Error registering user', error: error.message });
-            }
-        });
-        //register doit être un POST pas de protection
 
 
 
@@ -144,48 +197,10 @@ async function main() {
         //     res.send("<p>Connexion d'un utilisateur</p>");
         // })
 
-        const JWT_SECRET = 'votre_cle_secrete_pour_jwt'; // Utilisez une clé secrète sécurisée dans une application réelle
-        app.post('/login', async (req, res) => {
-            const { email, password } = req.body;
-            if (!email || !password) {
-                return res.status(400).json({ message: 'Email and password are required' });
-            }
-            try {
-                const user = await UserModel.findOne({ where: { email, password } });
-                if (!user) {
-                    return res.status(401).json({ message: 'Invalid email or password' });
-                }
+   
 
-                const token = jwt.sign({ userId: user.id }, JWT_SECRET, { expiresIn: '1h' });
-                res.cookie('token', token, { httpOnly: true });
-                res.json({ message: 'Login successful' });
-            } catch (error) {
-                res.status(500).json({ message: 'Error logging in', error: error.message });
-            }
-        });
+     
 
-
-
-        //Middleware isLoggedInJWT
-        function isLoggedInJWT(UserModel) {
-    return async (req, res, next) => {
-        const token = req.cookies.token;
-        if (!token) {
-            return res.status(401).json({ message: 'Unauthorized: No token provided' });
-        }
-        try {
-            const decoded = jwt.verify(token, JWT_SECRET);
-            req.userId = decoded.userId;
-            // // req.user = await UserModel.findByPk(req.userId); // Récupérer l'utilisateur connecté
-            // if (!req.user) {
-            //     return res.status(401).json({ message: 'Unauthorized' });
-            // }
-            next();
-        } catch (error) {
-            return res.status(401).json({ message: 'Unauthorized: Invalid token' });
-        }
-    }
-}
         //login doit être un POST pas de protection
 
         app.get("/logout", async (req, res) => {
@@ -195,9 +210,7 @@ async function main() {
         //logout doit être un POST OUI pour la protection
 
 
-
-
-
+   
 
         app.listen(3001, () => {
             console.log("Serveur démarré sur http://localhost:3001/");
