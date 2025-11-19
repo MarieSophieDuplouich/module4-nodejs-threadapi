@@ -140,10 +140,52 @@ async function main() {
 
 
 
-        app.get("/login", async (req, res) => {
-            res.send("<p>Connexion d'un utilisateur</p>");
-        })
+        // app.post("/login", async (req, res) => {
+        //     res.send("<p>Connexion d'un utilisateur</p>");
+        // })
 
+        const JWT_SECRET = 'votre_cle_secrete_pour_jwt'; // Utilisez une clé secrète sécurisée dans une application réelle
+        app.post('/login', async (req, res) => {
+            const { email, password } = req.body;
+            if (!email || !password) {
+                return res.status(400).json({ message: 'Email and password are required' });
+            }
+            try {
+                const user = await UserModel.findOne({ where: { email, password } });
+                if (!user) {
+                    return res.status(401).json({ message: 'Invalid email or password' });
+                }
+
+                const token = jwt.sign({ userId: user.id }, JWT_SECRET, { expiresIn: '1h' });
+                res.cookie('token', token, { httpOnly: true });
+                res.json({ message: 'Login successful' });
+            } catch (error) {
+                res.status(500).json({ message: 'Error logging in', error: error.message });
+            }
+        });
+
+
+
+        //Middleware isLoggedInJWT
+        function isLoggedInJWT(UserModel) {
+    return async (req, res, next) => {
+        const token = req.cookies.token;
+        if (!token) {
+            return res.status(401).json({ message: 'Unauthorized: No token provided' });
+        }
+        try {
+            const decoded = jwt.verify(token, JWT_SECRET);
+            req.userId = decoded.userId;
+            // // req.user = await UserModel.findByPk(req.userId); // Récupérer l'utilisateur connecté
+            // if (!req.user) {
+            //     return res.status(401).json({ message: 'Unauthorized' });
+            // }
+            next();
+        } catch (error) {
+            return res.status(401).json({ message: 'Unauthorized: Invalid token' });
+        }
+    }
+}
         //login doit être un POST pas de protection
 
         app.get("/logout", async (req, res) => {
