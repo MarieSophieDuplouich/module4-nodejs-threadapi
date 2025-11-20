@@ -25,8 +25,6 @@ async function main() {
         const app = express();
         app.use(cors());
 
-
-
         app.use(express.json()); // Activer le parsing du JSON body pour qu'il fournisse req.body
         app.use(cookieParser()); // Activer cookie-parser pour qu'il fournissent les cookies dans req.cookies
         const UserModel = sequelize.models.User;
@@ -111,6 +109,8 @@ async function main() {
                     // ++++++++++
                     // Récupérer l'utilisateur connecté
                     req.user = await UserModel.findByPk(req.userId);
+
+
                     if (!req.user) {
                         return res.status(401).json({ message: 'Unauthorized' });
                     }
@@ -122,10 +122,6 @@ async function main() {
                 }
             }
         }
-
-
-
-
 
         app.get("/", (req, res) => {
 
@@ -145,22 +141,27 @@ async function main() {
         app.get("/posts", async (req, res) => {
             const Post = sequelize.models.Post;
             const posts = await Post.findAll()
-            res.json(posts);
+            res.json(posts);// ça marche
         })
         //Création d'un nouveau post /posts doit être un POST OUI pour la protection 
 
-        app.post("/posts", async (req, res) => {
+        app.post("/posts", isLoggedInJWT(UserModel), async (req, res) => {
             console.log(req.body);
             const newPostData = req.body;
             try {
                 // +
                 const newPost = await Post.create({
-                    title: newPostData.title,
-                    content: newPostData.content,
-                    userId: 3
-
+                    // title: newPostData.title,
+                    // content: newPostData.content,
+                    // userId: newPostData.userid, //lui ne marche pas
+                    title: req.body.title,
+                    content: req.body.content,
+                    userId: req.user.id
                 });
-                res.json(newPost);
+
+                res.status(201).json(newPost)
+
+
             } catch (error) {
                 console.log(error);
                 res.status(500).json({ error: "Erreur lors de la création du post" });
@@ -168,73 +169,109 @@ async function main() {
         });
 
 
-
-
-
         app.get("/users", async (req, res) => {
             const User = sequelize.models.User;
             const users = await User.findAll()
-            res.json(users);
+            res.json(users); //ça marche
         })
 
 
-        //GET /user/:id get user id "
-        // app.get("/user/:id", async (req, res) => {
-        //     console.log(req.params);
-        //     const User = sequelize.models.User;
-        //     const userId = req.params.id;
-        //     const user = await User.findByPk(userId);
-        //     res.json(user)
-
-        // })
-        app.get("/profile/:userid", checkJWTLogin, async (request, response) => {
+        app.get("/profile/:userid", isLoggedInJWT, async (request, response) => {
             // Récupérer le profil de l'utilisateur connecté
             const { userid } = request.params;
             const user = await User.findByPk(userid);
             if (!user) {
                 return response.status(404).json({ error: "Utilisateur non trouvé" });
             }
-            response.json(user);
+            response.json(user); ////ça fait bugguer postman
         });
 
         // Déclaration de la fonction middleware qui vérifie la validité du token JWT
-        function checkJWTLogin(request, response, next) {
-            const token = request.cookies.token;
-            if (!token) {
-                return response.status(401).json({ error: "unAuthorized" });
-            }
-            try {
-                // 
-                const decoded = jwt.verify(token, JWT_SECRET);
-                request.userid = decoded.userid;
-                next();
-            } catch (error) {
-                return response.status(401).json({ error: "unAuthorized" });
-            }
-        }
+        // function checkJWTLogin(request, response, next) {
+        //     const token = request.cookies.token;
+        //     if (!token) {
+        //         return response.status(401).json({ error: "unAuthorized" });
+        //     }
+        //     try {
+        //         // 
+        //         const decoded = jwt.verify(token, JWT_SECRET);
+        //         request.userid = decoded.userid;
+        //         next();
+        //     } catch (error) {
+        //         return response.status(401).json({ error: "unAuthorized" });
+        //     }
+        // }
 
 
         // GET	/users/:userId/posts	Récupération des posts d'un utilisateur	pas de protection
-           app.get("/:userId/posts", async (req, res) => {
-            console.log(req.params);
+        app.get("/users/:userId/posts", async (req, res) => {
             const User = sequelize.models.User;
-            const userId = req.params.id;
-            const user = await User.findByPk(userId);
-            res.json(user)
-        })
+            const Post = sequelize.models.Post;
+
+            const user = await User.findByPk(req.params.userId, {
+                include: Post
+            });
+
+            if (!user) return res.status(404).json({ error: "Utilisateur introuvable" });
+
+            res.json(user.Posts);
+        });
+
 
         // POST	/posts/:postId/comments	Ajout d'un commentaire à un post	Oui protection
 
+        app.post("/posts/:postId/comments", isLoggedInJWT(UserModel), async (req, res) => {
+            try {
+                const Comment = sequelize.models.Comment;
+                // +
+                const newComment = await Comment.create({
+                    content: req.body.content,
+                    datetime: new Date(),
+                    userId: req.user.id,
+                    postId: req.params.postId
+                });
+
+                res.json(newComment);
+            } catch (error) {
+                console.log(error);
+                res.status(500).json({ error: "Erreur lors de la création du commentaire" });
+            }
+        });
 
 
+        // DELETE	/posts/:postId	Suppression d'un post	Oui (auteur ou admin je choisis admin)
+        app.delete("/posts/:postId", async (req, res) => {
+            const Post = sequelize.models.Post;
 
-        // DELETE	/posts/:postId	Suppression d'un post	Oui (auteur ou admin)
+            try {
+                const deleted = await Post.destroy({
+                    where: { id: req.params.postId }
+                });
+
+                res.json({ deleted });
+            } catch (error) {
+                console.log(error);
+                res.status(500).json({ error: "Erreur lors de la suppression du post" });
+            }
+        });
 
 
-        
 
         // DELETE	/comments/:commentId	Suppression d'un commentaire	Oui (auteur ou admin)
+        app.delete("/comments/:commentId", async (req, res) => {
+            const Comment = sequelize.models.Comment;
 
+            try {
+                const deleted = await Comment.destroy({
+                    where: { id: req.params.commentId }
+                });
+
+                res.json({ deleted });
+            } catch (error) {
+                console.log(error);
+                res.status(500).json({ error: "Erreur lors de la suppression du commentaire" });
+            }
+        });
 
 
         //login doit être un POST pas de protection

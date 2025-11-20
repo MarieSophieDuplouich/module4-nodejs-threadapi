@@ -23,6 +23,7 @@ export async function loadSequelize() {
         // Création des models (tables) -------------//
 
         const Comment = sequelize.define("Comment", {
+             title: DataTypes.STRING,
             content: DataTypes.TEXT,
             datetime: DataTypes.DATE
 
@@ -116,7 +117,7 @@ export async function loadSequelize() {
 
 
         // Je récupère un utilisateur en fonction de son id
-        const userById = await User.findByPk(2);
+        const userById = await User.findByPk(1);
         console.log(userById);
 
 
@@ -125,11 +126,12 @@ export async function loadSequelize() {
         const newPost = await Post.create({
             title: "acheter chips",
             content: "pour anniversaire Amaury",
+            datetime : new Date()
         });
 
         //création commentaires/comments
 
-        const NewComment = await Comment.create({
+        const newComment = await Comment.create({
             content: "mes commentaires",
             datetime: new Date(Date.now()),
             userId: userById.id,
