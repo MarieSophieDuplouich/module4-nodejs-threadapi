@@ -155,8 +155,8 @@ export async function loadSequelize() {
 
         // ---- 4. Les méthodes mixins pour créer et accéder aux données lors d'une relation `OneToMany`.-----------//
         // Création de plusieurs tâches à partir d'un utilisateur
-        await userById.createPost({ title: "Chien", content: "Sortir le chien" });
-        await userById.createPost({ title: "le chat", content: "nourrir le chat" });
+        await userById.createPost({ title: "Chien", content: "Sortir le chien",  datetime : new Date() });
+        await userById.createPost({ title: "le chat", content: "nourrir le chat",  datetime : new Date() });
 
         await userById.createComment({ title: "Merveilleux", content: "Il faut acheter les Merveilleux chocolats.Allez-y", datetime : new Date()});
         await userById.createComment({ title: "le chien", content: "Cet spa est merveilleux", datetime : new Date()});

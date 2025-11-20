@@ -226,8 +226,12 @@ async function main() {
         // POST	/posts/:postId/comments	Ajout d'un commentaire à un post	Oui protection
 
 
+
+
         // DELETE	/posts/:postId	Suppression d'un post	Oui (auteur ou admin)
 
+
+        
 
         // DELETE	/comments/:commentId	Suppression d'un commentaire	Oui (auteur ou admin)
 
