@@ -50,7 +50,7 @@ async function main() {
             }
         });
 
-        //register doit être un POST pas de protection
+        //register doit être un POST pas de protection // ça marche mettre le username
 
         app.post('/login', async (req, res) => {
             console.log("LOGIN REQ BODY :", req.body)
