@@ -5,7 +5,12 @@ import bcrypt from "bcrypt";
 import cookieParser from 'cookie-parser';
 import jwt from 'jsonwebtoken';
 
-const JWT_SECRET = 'coucou'; // Utilisez une clé secrète sécurisée dans une application réelle
+const JWT_SECRET = process.env.JWT_SECRET;// Utilisez une clé secrète sécurisée dans une application réelle
+
+
+// export JWT_SECRET="clé_secrete"
+// node main.mjs
+
 /**
  * Point d'entrée de l'application
  * Vous déclarer ici les routes de votre API REST
@@ -18,8 +23,8 @@ async function main() {
 
         const sequelize = await loadSequelize();
         const app = express();
+        app.use(cors());
 
-        //fin de cours avec express sur post
 
 
         app.use(express.json()); // Activer le parsing du JSON body pour qu'il fournisse req.body
@@ -57,19 +62,25 @@ async function main() {
             }
             try {
                 const user = await UserModel.findOne({ where: { email } });
-                console.log("USER FOUND :", user);
+                //variable user doit être testée tout de site après avoir 
+                // initialiser si elle n'existe pas 
+                // on sort de la fonction avec un return et le message d'erreur et après on fait me traitement s'il ya pas d'erreur conlusion : il avait raison
                 if (!user) {
                     return res.status(401).json({ message: 'Invalid email or password' });
                 }
 
+                console.log("USER FOUND :", user);
+
 
                 const isMatch = await bcrypt.compare(password, user.password);
 
-                console.log("PASSWORD MATCH ?", isMatch); // <--- LOG #3
 
-                if (!isMatch) {
+                if (!isMatch || !user) {
                     return res.status(401).json({ message: 'Invalid email or password' });
                 }
+
+
+                console.log("PASSWORD MATCH ?", isMatch); // <--- LOG #3
 
 
                 const token = jwt.sign({ userId: user.id }, JWT_SECRET, { expiresIn: '1h' });
@@ -78,7 +89,7 @@ async function main() {
                 res.cookie('token', token, { httpOnly: true });
                 res.json({ message: 'Login successful' });
             } catch (error) {
-                 console.error("LOGIN ERROR :", error);    // <--- LOG #4
+                console.error("LOGIN ERROR :", error);    // <--- LOG #4
                 res.status(500).json({ message: 'Error logging in', error: error.message });
             }
         });
@@ -136,9 +147,7 @@ async function main() {
             const posts = await Post.findAll()
             res.json(posts);
         })
-        ///// attention !!!
         //Création d'un nouveau post /posts doit être un POST OUI pour la protection 
-
 
         app.post("/posts", async (req, res) => {
             console.log(req.body);
@@ -170,17 +179,7 @@ async function main() {
 
 
         //GET /user/:id get user id "
-        app.get("/user/:id", async (req, res) => {
-            console.log(req.params);
-            const User = sequelize.models.User;
-            const userId = req.params.id;
-            const user = await User.findByPk(userId);
-            res.json(user)
-
-        })
-
-        // GET	/users/:userId/posts	Récupération des posts d'un utilisateur	pas de protection
-        //    app.get("/:userId/posts", async (req, res) => {
+        // app.get("/user/:id", async (req, res) => {
         //     console.log(req.params);
         //     const User = sequelize.models.User;
         //     const userId = req.params.id;
@@ -188,6 +187,41 @@ async function main() {
         //     res.json(user)
 
         // })
+        app.get("/profile/:userid", checkJWTLogin, async (request, response) => {
+            // Récupérer le profil de l'utilisateur connecté
+            const { userid } = request.params;
+            const user = await User.findByPk(userid);
+            if (!user) {
+                return response.status(404).json({ error: "Utilisateur non trouvé" });
+            }
+            response.json(user);
+        });
+
+        // Déclaration de la fonction middleware qui vérifie la validité du token JWT
+        function checkJWTLogin(request, response, next) {
+            const token = request.cookies.token;
+            if (!token) {
+                return response.status(401).json({ error: "unAuthorized" });
+            }
+            try {
+                // 
+                const decoded = jwt.verify(token, JWT_SECRET);
+                request.userid = decoded.userid;
+                next();
+            } catch (error) {
+                return response.status(401).json({ error: "unAuthorized" });
+            }
+        }
+
+
+        // GET	/users/:userId/posts	Récupération des posts d'un utilisateur	pas de protection
+           app.get("/:userId/posts", async (req, res) => {
+            console.log(req.params);
+            const User = sequelize.models.User;
+            const userId = req.params.id;
+            const user = await User.findByPk(userId);
+            res.json(user)
+        })
 
         // POST	/posts/:postId/comments	Ajout d'un commentaire à un post	Oui protection
 
