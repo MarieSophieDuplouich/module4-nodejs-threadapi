@@ -5,7 +5,7 @@ import bcrypt from "bcrypt";
 import cookieParser from 'cookie-parser';
 import jwt from 'jsonwebtoken';
 
-const JWT_SECRET = process.env.JWT_SECRET;// Utilisez une clé secrète sécurisée dans une application réelle
+const JWT_SECRET = process.env.JWT_SECRET ?? "supersecretdefou";// Utilisez une clé secrète sécurisée dans une application réelle
 
 
 // export JWT_SECRET="clé_secrete"
@@ -28,6 +28,7 @@ async function main() {
         app.use(express.json()); // Activer le parsing du JSON body pour qu'il fournisse req.body
         app.use(cookieParser()); // Activer cookie-parser pour qu'il fournissent les cookies dans req.cookies
         const UserModel = sequelize.models.User;
+        const Post = sequelize.models.Post;
 
         app.post('/register', async (req, res) => {
             const { email, password, verifiedPassword } = req.body;
@@ -90,7 +91,7 @@ async function main() {
                 console.error("LOGIN ERROR :", error);    // <--- LOG #4
                 res.status(500).json({ message: 'Error logging in', error: error.message });
             }
-        });
+        }); // ça marche
 
 
         //Middleware isLoggedInJWT
@@ -132,7 +133,7 @@ async function main() {
         app.get("/comments", async (req, res) => {
             const Comment = sequelize.models.Comment;
             const comments = await Comment.findAll()
-            res.json(comments);
+            res.json(comments);// ça marche
         })
 
 
@@ -153,10 +154,10 @@ async function main() {
                 const newPost = await Post.create({
                     // title: newPostData.title,
                     // content: newPostData.content,
-                    // userId: newPostData.userid, //lui ne marche pas
+                    // userId: newPostData.userid, // ça marche !!
                     title: req.body.title,
                     content: req.body.content,
-                    userId: req.user.id
+                    UserId: req.userId
                 });
 
                 res.status(201).json(newPost)
@@ -166,7 +167,7 @@ async function main() {
                 console.log(error);
                 res.status(500).json({ error: "Erreur lors de la création du post" });
             }
-        });
+        });// ça marche
 
 
         app.get("/users", async (req, res) => {
@@ -183,7 +184,7 @@ async function main() {
             if (!user) {
                 return response.status(404).json({ error: "Utilisateur non trouvé" });
             }
-            response.json(user); ////ça fait bugguer postman
+            response.json(user); 
         });
 
         // Déclaration de la fonction middleware qui vérifie la validité du token JWT
@@ -215,7 +216,7 @@ async function main() {
             if (!user) return res.status(404).json({ error: "Utilisateur introuvable" });
 
             res.json(user.Posts);
-        });
+        }); // ça marche
 
 
         // POST	/posts/:postId/comments	Ajout d'un commentaire à un post	Oui protection
@@ -227,8 +228,8 @@ async function main() {
                 const newComment = await Comment.create({
                     content: req.body.content,
                     datetime: new Date(),
-                    userId: req.user.id,
-                    postId: req.params.postId
+                    userId: req.userId,
+                    postId: req.postId
                 });
 
                 res.json(newComment);
@@ -236,7 +237,7 @@ async function main() {
                 console.log(error);
                 res.status(500).json({ error: "Erreur lors de la création du commentaire" });
             }
-        });
+        });// ici ajouter un PostId
 
 
         // DELETE	/posts/:postId	Suppression d'un post	Oui (auteur ou admin je choisis admin)
@@ -253,7 +254,7 @@ async function main() {
                 console.log(error);
                 res.status(500).json({ error: "Erreur lors de la suppression du post" });
             }
-        });
+        });// ça marche
 
 
 
@@ -271,15 +272,15 @@ async function main() {
                 console.log(error);
                 res.status(500).json({ error: "Erreur lors de la suppression du commentaire" });
             }
-        });
+        });//ça marche
 
 
         //login doit être un POST pas de protection
 
-        app.get("/logout", async (req, res) => {
+        app.post("/logout", async (req, res) => {
             res.clearCookie('token');
             res.json({ message: 'Logout successful' });
-        })
+        }) //ça marche
 
         //logout doit être un POST OUI pour la protection
 
