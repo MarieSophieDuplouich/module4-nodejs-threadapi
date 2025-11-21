@@ -31,11 +31,11 @@ async function main() {
         const Post = sequelize.models.Post;
 
         app.post('/register', async (req, res) => {
-            const { email, password, verifiedPassword } = req.body;
+            const {username,email, password, verifiedPassword } = req.body;
 
 
-            if (!email || !password || !verifiedPassword) {
-                return res.status(400).json({ message: 'Email, password and verifiedPassword are required' });
+            if (!username || !email || !password || !verifiedPassword) {
+                return res.status(400).json({ message: 'Username,Email, password and verifiedPassword are required' });
             }
 
             if (password !== verifiedPassword) {
@@ -43,14 +43,14 @@ async function main() {
             }
 
             try {
-                const newUser = await UserModel.create({ email, password });
+                const newUser = await UserModel.create({ username,email, password });
                 res.status(201).json({ message: 'User registered successfully', userId: newUser.id });
             } catch (error) {
                 res.status(500).json({ message: 'Error registering user', error: error.message });
             }
         });
 
-        //register doit être un POST pas de protection // ça marche mettre le username
+        //register doit être un POST pas de protection // ça marche
 
         app.post('/login', async (req, res) => {
             console.log("LOGIN REQ BODY :", req.body)
@@ -157,7 +157,8 @@ async function main() {
                     // userId: newPostData.userid, // ça marche !!
                     title: req.body.title,
                     content: req.body.content,
-                    UserId: req.userId
+                    UserId: req.userId,
+                    // PostId:req.postId
                 });
 
                 res.status(201).json(newPost)
@@ -226,10 +227,11 @@ async function main() {
                 const Comment = sequelize.models.Comment;
                 // +
                 const newComment = await Comment.create({
+                    title:req.body.title,
                     content: req.body.content,
                     datetime: new Date(),
-                    userId: req.userId,
-                    postId: req.postId
+                    UserId: req.userId,
+                    PostId: req.params.postId
                 });
 
                 res.json(newComment);
