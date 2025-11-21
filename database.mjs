@@ -131,12 +131,12 @@ export async function loadSequelize() {
 
         //création commentaires/comments
 
-        const newComment = await Comment.create({
-            content: "mes commentaires",
-            datetime: new Date(Date.now()),
-            userId: userById.id,
-            postId: newPost.id
-        });
+        // const newComment = await Comment.create({
+        //     content: "mes commentaires",
+        //     datetime: new Date(Date.now()),
+        //     userId: userById.id,
+        //     postId: newPost.id
+        // });
 
 
         // ---- 3. Sélection de lignes (SELECT) ---- 

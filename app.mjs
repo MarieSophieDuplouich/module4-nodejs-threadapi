@@ -21,7 +21,6 @@ async function main() {
 
         const sequelize = await loadSequelize();
         const app = express();
-        
         app.use(cors({
             origin: "http://localhost:3001",
             credentials: true
@@ -155,7 +154,12 @@ async function main() {
               try {
 
             const Post = sequelize.models.Post;
-            const posts = await Post.findAll()
+            const posts = await Post.findAll({
+            include: [
+                { model: User, attributes: ["id", "username"] },
+                { model: Comment, include: [{ model: User, attributes: ["id", "username"] }] }
+            ]
+        })
             res.json(posts);// ça marche
 
           
