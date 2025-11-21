@@ -171,17 +171,17 @@ async function main() {
         });// ça marche
 
 
-        app.get("/users", async (req, res) => {
-            const User = sequelize.models.User;
-            const users = await User.findAll()
-            res.json(users); //ça marche
-        })
+        // app.get("/users", async (req, res) => {
+        //     const User = sequelize.models.User;
+        //     const users = await User.findAll()
+        //     res.json(users); //ça marche
+        // })
 
 
-        app.get("/profile/:userid", isLoggedInJWT, async (request, response) => {
+        app.get("/profile/:userid", isLoggedInJWT(UserModel), async (request, response) => {
             // Récupérer le profil de l'utilisateur connecté
             const { userid } = request.params;
-            const user = await User.findByPk(userid);
+            const user = await UserModel.findByPk(userid);
             if (!user) {
                 return response.status(404).json({ error: "Utilisateur non trouvé" });
             }
@@ -242,6 +242,7 @@ async function main() {
         });// ici ajouter un PostId
 
 
+        // Auth ++++
         // DELETE	/posts/:postId	Suppression d'un post	Oui (auteur ou admin je choisis admin)
         app.delete("/posts/:postId", async (req, res) => {
             const Post = sequelize.models.Post;
@@ -259,7 +260,7 @@ async function main() {
         });// ça marche
 
 
-
+        // Auth auteur +++++++++++++++
         // DELETE	/comments/:commentId	Suppression d'un commentaire	Oui (auteur ou admin)
         app.delete("/comments/:commentId", async (req, res) => {
             const Comment = sequelize.models.Comment;
