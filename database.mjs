@@ -23,10 +23,13 @@ export async function loadSequelize() {
         // Création des models (tables) -------------//
 
         const Comment = sequelize.define("Comment", {
-             title: DataTypes.STRING,
+            title: DataTypes.STRING,
             content: DataTypes.TEXT,
-            datetime: DataTypes.DATE
-
+            datetime: DataTypes.DATE,
+            UserId: {
+                type: DataTypes.INTEGER,
+                allowNull: false
+            }
 
         });
 
@@ -40,7 +43,12 @@ export async function loadSequelize() {
 
         const User = sequelize.define("User", {
             username: DataTypes.STRING,
-            email: DataTypes.STRING,
+            email: {
+                type : DataTypes.STRING,
+                validate : {
+                    isEmail:true
+                }
+            },
             password: {
                 type: DataTypes.STRING,
                 set(val) {
@@ -48,7 +56,7 @@ export async function loadSequelize() {
                 }
             }
         });
-         //
+        //
         //         const User = sequelize.define("User", {
         //     username: DataTypes.STRING,
         //     email: DataTypes.STRING,
@@ -67,13 +75,25 @@ export async function loadSequelize() {
         // les relations les define avant le sync les .create après
 
 
-        User.hasMany(Comment);//ligne ajoute foreign key
+        User.hasMany(Comment, {
+            foreignKey: {
+                allowNull: false
+            }
+        });//ligne ajoute foreign key
         Comment.belongsTo(User);
 
-        User.hasMany(Post);
+        User.hasMany(Post, {
+            foreignKey: {
+                allowNull: false
+            }
+        });
         Post.belongsTo(User);
 
-        Post.hasMany(Comment);
+        Post.hasMany(Comment, {
+            foreignKey: {
+                allowNull: false
+            }
+        });
         Comment.belongsTo(Post);
 
         // CREER LES TABLES AVANT LA FONCTION sync !
@@ -126,7 +146,8 @@ export async function loadSequelize() {
         const newPost = await Post.create({
             title: "acheter chips",
             content: "pour anniversaire Amaury",
-            datetime : new Date()
+            datetime: new Date(),
+            UserId: userById.id
         });
 
         //création commentaires/comments
@@ -157,11 +178,11 @@ export async function loadSequelize() {
 
         // ---- 4. Les méthodes mixins pour créer et accéder aux données lors d'une relation `OneToMany`.-----------//
         // Création de plusieurs tâches à partir d'un utilisateur
-        await userById.createPost({ title: "Chien", content: "Sortir le chien",  datetime : new Date() });
-        await userById.createPost({ title: "le chat", content: "nourrir le chat",  datetime : new Date() });
+        const p1 = await userById.createPost({ title: "Chien", content: "Sortir le chien", datetime: new Date() });
+        const p2 = await userById.createPost({ title: "le chat", content: "nourrir le chat", datetime: new Date() });
 
-        await userById.createComment({ title: "Merveilleux", content: "Il faut acheter les Merveilleux chocolats.Allez-y", datetime : new Date()});
-        await userById.createComment({ title: "le chien", content: "Cet spa est merveilleux", datetime : new Date()});
+        await userById.createComment({ title: "Merveilleux", content: "Il faut acheter les Merveilleux chocolats.Allez-y", datetime: new Date(), PostId: p1.id });
+        await userById.createComment({ title: "le chien", content: "Cet spa est merveilleux", datetime: new Date(), PostId:p2.id});
 
 
 
