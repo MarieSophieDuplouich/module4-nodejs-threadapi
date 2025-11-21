@@ -16,22 +16,25 @@ const JWT_SECRET = process.env.JWT_SECRET ?? "supersecretdefou";// Utilisez une 
  * Vous déclarer ici les routes de votre API REST
  */
 
-
-
 async function main() {
     try {
 
         const sequelize = await loadSequelize();
         const app = express();
-        app.use(cors());
+        
+        app.use(cors({
+            origin: "http://localhost:3001",
+            credentials: true
+        }));
 
         app.use(express.json()); // Activer le parsing du JSON body pour qu'il fournisse req.body
         app.use(cookieParser()); // Activer cookie-parser pour qu'il fournissent les cookies dans req.cookies
+
         const UserModel = sequelize.models.User;
         const Post = sequelize.models.Post;
 
         app.post('/register', async (req, res) => {
-            const {username,email, password, verifiedPassword } = req.body;
+            const { username, email, password, verifiedPassword } = req.body;
 
 
             if (!username || !email || !password || !verifiedPassword) {
@@ -43,7 +46,7 @@ async function main() {
             }
 
             try {
-                const newUser = await UserModel.create({ username,email, password });
+                const newUser = await UserModel.create({ username, email, password });
                 res.status(201).json({ message: 'User registered successfully', userId: newUser.id });
             } catch (error) {
                 res.status(500).json({ message: 'Error registering user', error: error.message });
@@ -126,23 +129,42 @@ async function main() {
 
         app.get("/", (req, res) => {
 
-
             res.json({ message: "Hello api 7 le vrai projet" })
         })
 
         app.get("/comments", async (req, res) => {
+               try {
             const Comment = sequelize.models.Comment;
             const comments = await Comment.findAll()
             res.json(comments);// ça marche
+
+         
+
+
+            } catch (error) {
+                console.error("Comments aren't displayed :", error);    // <--- LOG #4
+                res.status(500).json({ message: 'Error Comments not displayed', error: error.message });
+
+            }
         })
 
 
         // /posts GET Récupération de tous les posts avec commentaires	pas de protection
 
         app.get("/posts", async (req, res) => {
+              try {
+
             const Post = sequelize.models.Post;
             const posts = await Post.findAll()
             res.json(posts);// ça marche
+
+          
+
+            } catch (error) {
+                console.error("posts aren't displayed :", error);    // <--- LOG #4
+                res.status(500).json({ message: 'Error Posts not displayed', error: error.message });
+
+            }
         })
         //Création d'un nouveau post /posts doit être un POST OUI pour la protection 
 
@@ -171,42 +193,30 @@ async function main() {
         });// ça marche
 
 
-        // app.get("/users", async (req, res) => {
-        //     const User = sequelize.models.User;
-        //     const users = await User.findAll()
-        //     res.json(users); //ça marche
-        // })
-
-
         app.get("/profile/:userid", isLoggedInJWT(UserModel), async (request, response) => {
-            // Récupérer le profil de l'utilisateur connecté
-            const { userid } = request.params;
-            const user = await UserModel.findByPk(userid);
-            if (!user) {
-                return response.status(404).json({ error: "Utilisateur non trouvé" });
-            }
-            response.json(user); 
-        });
+            try {
+                const { userid } = request.params;
+                // Récupérer le profil de l'utilisateur connecté
+                const user = await UserModel.findByPk(userid);
+                if (!user) {
+                    return response.status(404).json({ error: "Utilisateur non trouvé" });
+                }
+                response.json(user);
 
-        // Déclaration de la fonction middleware qui vérifie la validité du token JWT
-        // function checkJWTLogin(request, response, next) {
-        //     const token = request.cookies.token;
-        //     if (!token) {
-        //         return response.status(401).json({ error: "unAuthorized" });
-        //     }
-        //     try {
-        //         // 
-        //         const decoded = jwt.verify(token, JWT_SECRET);
-        //         request.userid = decoded.userid;
-        //         next();
-        //     } catch (error) {
-        //         return response.status(401).json({ error: "unAuthorized" });
-        //     }
-        // }
+
+
+            }
+            catch (error) {
+                console.error("User's profile isn't displayed :", error);    // <--- LOG #4
+                res.status(500).json({ message: 'Error User profile not displayed', error: error.message });
+            }
+        });
 
 
         // GET	/users/:userId/posts	Récupération des posts d'un utilisateur	pas de protection
         app.get("/users/:userId/posts", async (req, res) => {
+
+            try{
             const User = sequelize.models.User;
             const Post = sequelize.models.Post;
 
@@ -216,7 +226,12 @@ async function main() {
 
             if (!user) return res.status(404).json({ error: "Utilisateur introuvable" });
 
-            res.json(user.Posts);
+            res.json(user.Posts);}
+            catch (error) {
+                console.error(" /users/:userId/posts isn't displayed :", error);    // <--- LOG #4
+                res.status(500).json({ message: 'Error /users/:userId/posts not displayed', error: error.message });
+            }
+
         }); // ça marche
 
 
@@ -227,7 +242,7 @@ async function main() {
                 const Comment = sequelize.models.Comment;
                 // +
                 const newComment = await Comment.create({
-                    title:req.body.title,
+                    title: req.body.title,
                     content: req.body.content,
                     datetime: new Date(),
                     UserId: req.userId,
@@ -239,18 +254,28 @@ async function main() {
                 console.log(error);
                 res.status(500).json({ error: "Erreur lors de la création du commentaire" });
             }
-        });// ici ajouter un PostId
+        });// ça marche
 
 
         // Auth ++++
         // DELETE	/posts/:postId	Suppression d'un post	Oui (auteur ou admin je choisis admin)
-        app.delete("/posts/:postId", async (req, res) => {
+        app.delete("/posts/:postId", isLoggedInJWT(UserModel), async (req, res) => {
             const Post = sequelize.models.Post;
 
             try {
+                const post = await Post.findByPk(req.params.postId);
                 const deleted = await Post.destroy({
                     where: { id: req.params.postId }
                 });
+
+                if (!post) {
+                    return res.status(404).json({ error: "Post not found" });
+                } else { console.log("Post supprimé User connecté"); }
+
+                if (post.UserId !== req.userId) {
+                    return res.status(403).json({ error: "Unauthorized" });
+                }
+
 
                 res.json({ deleted });
             } catch (error) {
@@ -262,13 +287,22 @@ async function main() {
 
         // Auth auteur +++++++++++++++
         // DELETE	/comments/:commentId	Suppression d'un commentaire	Oui (auteur ou admin)
-        app.delete("/comments/:commentId", async (req, res) => {
-            const Comment = sequelize.models.Comment;
-
+        app.delete("/comments/:commentId", isLoggedInJWT(UserModel), async (req, res) => {
+        
             try {
+                   const Comment = sequelize.models.Comment;
+                const comment = await Comment.findByPk(req.params.commentId);
+
                 const deleted = await Comment.destroy({
                     where: { id: req.params.commentId }
                 });
+                if (!comment) {
+                    return res.status(404).json({ error: "Comment not found" });
+                }
+
+                if (comment.UserId !== req.userId) {
+                    return res.status(403).json({ error: "Unauthorized" });
+                }
 
                 res.json({ deleted });
             } catch (error) {
@@ -281,12 +315,22 @@ async function main() {
         //login doit être un POST pas de protection
 
         app.post("/logout", async (req, res) => {
+            try {
             res.clearCookie('token');
             res.json({ message: 'Logout successful' });
+             }
+            catch (error) {
+                console.error("logout doesn't work :", error);    // <--- LOG #4
+                res.status(500).json({ message: 'Error Logout not work', error: error.message });
+
+            }
         }) //ça marche
 
         //logout doit être un POST OUI pour la protection
 
+        app.use((req, res, next) => {
+            res.status(404).send("Sorry can't find that!")
+        })
 
 
 
