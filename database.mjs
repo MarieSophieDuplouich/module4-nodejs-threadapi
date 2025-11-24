@@ -25,7 +25,10 @@ export async function loadSequelize() {
         const Comment = sequelize.define("Comment", {
             title: DataTypes.STRING,
             content: DataTypes.TEXT,
-            datetime: DataTypes.DATE,
+            datetime: {
+                type: DataTypes.DATE,
+                defaultValue: DataTypes.NOW
+            },
             UserId: {
                 type: DataTypes.INTEGER,
                 allowNull: false
@@ -34,9 +37,23 @@ export async function loadSequelize() {
         });
 
         const Post = sequelize.define("Post", {
-            title: DataTypes.TEXT,
-            content: DataTypes.TEXT,
-            datetime: DataTypes.DATE
+            title: {
+                type: DataTypes.STRING,
+                allowNull: false
+            },
+
+
+            content: {
+                type: DataTypes.TEXT,
+                allowNull: false
+            },
+
+            datetime: {
+                type: DataTypes.DATE,
+                defaultValue: DataTypes.NOW
+
+            }
+
 
 
         });
@@ -44,9 +61,9 @@ export async function loadSequelize() {
         const User = sequelize.define("User", {
             username: DataTypes.STRING,
             email: {
-                type : DataTypes.STRING,
-                validate : {
-                    isEmail:true
+                type: DataTypes.STRING,
+                validate: {
+                    isEmail: true
                 }
             },
             password: {
@@ -56,24 +73,9 @@ export async function loadSequelize() {
                 }
             }
         });
-        //
-        //         const User = sequelize.define("User", {
-        //     username: DataTypes.STRING,
-        //     email: DataTypes.STRING,
-        //     password: {
-        //         type: DataTypes.STRING,
-        //         // Hook pour chiffrer le mot de passe avant de le sauvegarder
-        //         // +
-        //         set(clearPassword) {
-        //             const hashedPassword = bcrypt.hashSync(clearPassword, 10);
-        //             this.setDataValue('password', hashedPassword);
-        //         }
-        //     }
-        // });
 
 
         // les relations les define avant le sync les .create après
-
 
         User.hasMany(Comment, {
             foreignKey: {
@@ -182,15 +184,10 @@ export async function loadSequelize() {
         const p2 = await userById.createPost({ title: "le chat", content: "nourrir le chat", datetime: new Date() });
 
         await userById.createComment({ title: "Merveilleux", content: "Il faut acheter les Merveilleux chocolats.Allez-y", datetime: new Date(), PostId: p1.id });
-        await userById.createComment({ title: "le chien", content: "Cet spa est merveilleux", datetime: new Date(), PostId:p2.id});
-
-
+        await userById.createComment({ title: "le chien", content: "Cet spa est merveilleux", datetime: new Date(), PostId: p2.id });
 
 
         console.log("Connexion à la BDD effectuée")
-
-
-
 
 
         return sequelize;
@@ -199,6 +196,6 @@ export async function loadSequelize() {
         throw Error("Échec du chargement de Sequelize");
     }
 
-    // ...
+
 
 }

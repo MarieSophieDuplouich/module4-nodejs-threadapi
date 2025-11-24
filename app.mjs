@@ -25,6 +25,8 @@ async function main() {
 
         const app = express();
         app.use(helmet({
+            //  crossorigin Parce que certains frameworks frontend (React, Vite, Next.js, iframes…) ont des soucis avec COEP.
+            //Ton projet n’a PAS besoin de ça, sauf si ton frontend charge des PDFs, images cross-site, iframes, WebAssembly, etc.
             crossOriginEmbedderPolicy: false,
             xPoweredBy: false,
         }));
@@ -160,7 +162,8 @@ async function main() {
 
         app.get("/posts", async (req, res) => {
             try {
-
+                const User = sequelize.models.User;
+                const Comment = sequelize.models.Comment;
                 const Post = sequelize.models.Post;
                 const posts = await Post.findAll({
                     include: [
