@@ -4,6 +4,8 @@ import cors from "cors";
 import bcrypt from "bcrypt";
 import cookieParser from 'cookie-parser';
 import jwt from 'jsonwebtoken';
+import helmet from "helmet";
+
 
 const JWT_SECRET = process.env.JWT_SECRET ?? "supersecretdefou";// Utilisez une clé secrète sécurisée dans une application réelle
 
@@ -20,7 +22,13 @@ async function main() {
     try {
 
         const sequelize = await loadSequelize();
+
         const app = express();
+        app.use(helmet({
+            crossOriginEmbedderPolicy: false,
+            xPoweredBy: false,
+        }));
+
         app.use(cors({
             origin: "http://localhost:3001",
             credentials: true
@@ -132,12 +140,12 @@ async function main() {
         })
 
         app.get("/comments", async (req, res) => {
-               try {
-            const Comment = sequelize.models.Comment;
-            const comments = await Comment.findAll()
-            res.json(comments);// ça marche
+            try {
+                const Comment = sequelize.models.Comment;
+                const comments = await Comment.findAll()
+                res.json(comments);// ça marche
 
-         
+
 
 
             } catch (error) {
@@ -151,18 +159,18 @@ async function main() {
         // /posts GET Récupération de tous les posts avec commentaires	pas de protection
 
         app.get("/posts", async (req, res) => {
-              try {
+            try {
 
-            const Post = sequelize.models.Post;
-            const posts = await Post.findAll({
-            include: [
-                { model: User, attributes: ["id", "username"] },
-                { model: Comment, include: [{ model: User, attributes: ["id", "username"] }] }
-            ]
-        })
-            res.json(posts);// ça marche
+                const Post = sequelize.models.Post;
+                const posts = await Post.findAll({
+                    include: [
+                        { model: User, attributes: ["id", "username"] },
+                        { model: Comment, include: [{ model: User, attributes: ["id", "username"] }] }
+                    ]
+                })
+                res.json(posts);// ça marche
 
-          
+
 
             } catch (error) {
                 console.error("posts aren't displayed :", error);    // <--- LOG #4
@@ -220,17 +228,18 @@ async function main() {
         // GET	/users/:userId/posts	Récupération des posts d'un utilisateur	pas de protection
         app.get("/users/:userId/posts", async (req, res) => {
 
-            try{
-            const User = sequelize.models.User;
-            const Post = sequelize.models.Post;
+            try {
+                const User = sequelize.models.User;
+                const Post = sequelize.models.Post;
 
-            const user = await User.findByPk(req.params.userId, {
-                include: Post
-            });
+                const user = await User.findByPk(req.params.userId, {
+                    include: Post
+                });
 
-            if (!user) return res.status(404).json({ error: "Utilisateur introuvable" });
+                if (!user) return res.status(404).json({ error: "Utilisateur introuvable" });
 
-            res.json(user.Posts);}
+                res.json(user.Posts);
+            }
             catch (error) {
                 console.error(" /users/:userId/posts isn't displayed :", error);    // <--- LOG #4
                 res.status(500).json({ message: 'Error /users/:userId/posts not displayed', error: error.message });
@@ -292,9 +301,9 @@ async function main() {
         // Auth auteur +++++++++++++++
         // DELETE	/comments/:commentId	Suppression d'un commentaire	Oui (auteur ou admin)
         app.delete("/comments/:commentId", isLoggedInJWT(UserModel), async (req, res) => {
-        
+
             try {
-                   const Comment = sequelize.models.Comment;
+                const Comment = sequelize.models.Comment;
                 const comment = await Comment.findByPk(req.params.commentId);
 
                 const deleted = await Comment.destroy({
@@ -320,9 +329,9 @@ async function main() {
 
         app.post("/logout", async (req, res) => {
             try {
-            res.clearCookie('token');
-            res.json({ message: 'Logout successful' });
-             }
+                res.clearCookie('token');
+                res.json({ message: 'Logout successful' });
+            }
             catch (error) {
                 console.error("logout doesn't work :", error);    // <--- LOG #4
                 res.status(500).json({ message: 'Error Logout not work', error: error.message });
