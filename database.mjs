@@ -23,15 +23,38 @@ export async function loadSequelize() {
         // Création des models (tables) -------------//
 
         const Comment = sequelize.define("Comment", {
-            title: DataTypes.STRING,
-            content: DataTypes.TEXT,
+            title: {
+                type: DataTypes.STRING,
+                allowNull: false,
+
+                validate: {
+                   len: [3, 300]
+                },
+
+            },
+            content: {
+               type: DataTypes.TEXT,
+
+                validate: {
+                    len: [3, 300],
+
+                },
+            },
+
             datetime: {
                 type: DataTypes.DATE,
-                defaultValue: DataTypes.NOW
+                defaultValue: DataTypes.NOW,
+
+                validate: {
+                    isAfter: "2011-11-05"
+
+                }
+
             },
             UserId: {
                 type: DataTypes.INTEGER,
-                allowNull: false
+                allowNull: false,
+                
             }
 
         });
@@ -39,18 +62,31 @@ export async function loadSequelize() {
         const Post = sequelize.define("Post", {
             title: {
                 type: DataTypes.STRING,
-                allowNull: false
+                allowNull: false,
+
+                   validate: {
+                   len: [3, 300]
+                },
             },
 
 
             content: {
                 type: DataTypes.TEXT,
-                allowNull: false
+                allowNull: false,
+                   validate: {
+                   len: [3, 300]
+                },
             },
 
             datetime: {
                 type: DataTypes.DATE,
-                defaultValue: DataTypes.NOW
+                defaultValue: DataTypes.NOW,
+
+                validate: {
+                    isAfter: "2011-11-05"
+
+                }
+
 
             }
 
@@ -59,15 +95,34 @@ export async function loadSequelize() {
         });
 
         const User = sequelize.define("User", {
-            username: DataTypes.STRING,
+            username: {
+                type: DataTypes.STRING,
+                allowNull:false,
+                    unique: true,
+              
+              
+
+            },
             email: {
                 type: DataTypes.STRING,
+                  unique: true,
+                  allowNull:false,
+
                 validate: {
-                    isEmail: true
-                }
+                    isEmail: true,
+                   
+                },
             },
             password: {
+
+                allowNull:false,
                 type: DataTypes.STRING,
+                     validate: {
+                   len: [10],
+                //    is: /^[a-z]+$/i,  
+               is : /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*()_\-+=\[\]{};:'",.<>/?\\|`~]).{10,}$/,
+                },
+
                 set(val) {
                     this.setDataValue('password', bcrypt.hashSync(val, 10))
                 }
