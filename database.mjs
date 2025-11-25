@@ -28,12 +28,12 @@ export async function loadSequelize() {
                 allowNull: false,
 
                 validate: {
-                   len: [3, 300]
+                    len: [3, 300]
                 },
 
             },
             content: {
-               type: DataTypes.TEXT,
+                type: DataTypes.TEXT,
 
                 validate: {
                     len: [3, 300],
@@ -54,7 +54,7 @@ export async function loadSequelize() {
             UserId: {
                 type: DataTypes.INTEGER,
                 allowNull: false,
-                
+
             }
 
         });
@@ -64,8 +64,8 @@ export async function loadSequelize() {
                 type: DataTypes.STRING,
                 allowNull: false,
 
-                   validate: {
-                   len: [3, 300]
+                validate: {
+                    len: [3, 300]
                 },
             },
 
@@ -73,8 +73,8 @@ export async function loadSequelize() {
             content: {
                 type: DataTypes.TEXT,
                 allowNull: false,
-                   validate: {
-                   len: [3, 300]
+                validate: {
+                    len: [3, 300]
                 },
             },
 
@@ -97,34 +97,36 @@ export async function loadSequelize() {
         const User = sequelize.define("User", {
             username: {
                 type: DataTypes.STRING,
-                allowNull:false,
-                    unique: true,
-              
-              
+                allowNull: false,
+                unique: true,
+
+
 
             },
             email: {
                 type: DataTypes.STRING,
-                  unique: true,
-                  allowNull:false,
+                unique: true,
+                allowNull: false,
 
                 validate: {
                     isEmail: true,
-                   
+
                 },
             },
-            password: {
 
-                allowNull:false,
+
+            password: {
+                allowNull: false,
                 type: DataTypes.STRING,
-                     validate: {
-                   len: [10],
-                //    is: /^[a-z]+$/i,  
-               is : /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*()_\-+=\[\]{};:'",.<>/?\\|`~]).{10,}$/,
+                validate: {
+                    len: [10],
+                    // is: /^[a-z]+$/i,
+                       is : /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*()_\-+=\[\]{};:'",.<>/?\\|`~]).{10,}$/,
                 },
 
                 set(val) {
                     this.setDataValue('password', bcrypt.hashSync(val, 10))
+                    //le 10 c'est hashé dix fois
                 }
             }
         });
@@ -161,27 +163,27 @@ export async function loadSequelize() {
         const newUser = await User.create({
             username: "massinissa",
             email: "massi@mail.com",
-            password: "1234"
+            password: "1234hcfshfgufrLLOLIH__"
         });
         // INSERT INTO User
         const newUser2 = await User.create({
             username: "billy",
             email: "billy@mail.com",
-            password: "1234"
+            password: "1234hcfshfgufrLLOLIH__"
         });
 
         // INSERT INTO User
         const newUser3 = await User.create({
             username: "billyetboule",
             email: "billyboule@mail.com",
-            password: "1234"
+            password: "1234hcfshfgufrLLOLIH__"
         });
 
         // INSERT INTO User
         const newUser4 = await User.create({
             username: "legrandcactus",
             email: "legrandcactus@mail.com",
-            password: "1234"
+            password: "1234hcfshfgufrLLOLIH__"
         });
 
         // DELETE User
